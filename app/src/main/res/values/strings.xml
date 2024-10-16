@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Cashier App</string>
+    <string name="title_activity_header_view">HeaderView</string>
 </resources>

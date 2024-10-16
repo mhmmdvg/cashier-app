@@ -13,6 +13,11 @@
         android:theme="@style/Theme.CashierApp"
         tools:targetApi="31">
         <activity
+            android:name=".ui.view.HeaderView"
+            android:exported="false"
+            android:label="@string/title_activity_header_view"
+            android:theme="@style/Theme.CashierApp" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
