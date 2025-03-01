@@ -20,17 +20,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import cashierapp.presentations.ui.theme.BorderGray
 
 @Composable
-fun Search() {
-    var text by remember { mutableStateOf(TextFieldValue("")) }
+fun Search(onChange: (TextFieldValue) -> Unit, value: TextFieldValue, placeholder: String = "Search your product") {
 
     OutlinedTextField(
-        value = text,
+        value = value,
         placeholder = {
-            Text("Search")
+            Text(placeholder)
         },
-        onValueChange = { newText ->
-            text = newText
-        },
+        onValueChange = onChange,
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.Black,
@@ -47,6 +44,11 @@ fun Search() {
 @Preview(showBackground = true)
 @Composable
 fun SearchPreview() {
-    Search()
+    var text by remember { mutableStateOf(TextFieldValue("")) }
+
+    Search(
+        value = text,
+        onChange = { text = it },
+    )
 }
 

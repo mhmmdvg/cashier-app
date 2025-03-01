@@ -8,8 +8,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -24,6 +28,8 @@ import cashierapp.utils.rememberScreenSize
 
 @Composable
 fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: NavController) {
+    var searchVal by remember { mutableStateOf(TextFieldValue("")) }
+
     val products by viewModel.products.collectAsState()
     val screenSize = rememberScreenSize()
     val defaultImage: String =
@@ -47,6 +53,14 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
         ScreenSize.EXPANDED -> 32.dp
     }
 
+   val filteredProduct =  if (searchVal.text.isEmpty()) {
+       products.data
+   } else {
+       products.data?.filter {
+           it.name.contains(searchVal.text, ignoreCase = true)
+       }
+   }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -64,7 +78,10 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
                     )
                 }
                 item(span = { GridItemSpan(gridColumns) }) {
-                    Search()
+                    Search(
+                        value = searchVal,
+                        onChange = { searchVal = it }
+                    )
                 }
 
                 when (products) {
@@ -108,7 +125,7 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
                     }
 
                     is Resource.Success -> {
-                        products.data?.let {
+                        filteredProduct?.let {
                             items(it.size) { index ->
                                 val product = it[index]
                                 CardItem(title = product.name, "Rp.${product.price}", product.image ?: defaultImage) {

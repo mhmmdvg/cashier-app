@@ -26,12 +26,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import cashierapp.data.resources.Resource
 import cashierapp.presentations.ui.components.AsyncImage
 import com.composables.icons.lucide.ArrowLeft
-import com.composables.icons.lucide.Eye
-import com.composables.icons.lucide.EyeOff
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Plus
-import com.example.cashierapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
