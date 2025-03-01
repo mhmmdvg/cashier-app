@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cashierapp"
+    namespace = "com.cashierapp"
     compileSdk = 34
 
     defaultConfig {
