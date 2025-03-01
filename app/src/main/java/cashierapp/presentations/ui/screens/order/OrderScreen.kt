@@ -1,7 +1,11 @@
 package cashierapp.presentations.ui.screens.order
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import cashierapp.data.resources.Resource
 import cashierapp.presentations.ui.components.AsyncImage
+import cashierapp.presentations.ui.theme.BorderGray
+import cashierapp.presentations.ui.theme.PrimaryColor
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
@@ -32,7 +38,11 @@ import com.composables.icons.lucide.Plus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderScreen(viewModel: DetailProductViewModel = hiltViewModel(), productId: String?, onNavigateBack: () -> Unit) {
+fun OrderScreen(
+    viewModel: DetailProductViewModel = hiltViewModel(),
+    productId: String?,
+    onNavigateBack: () -> Unit
+) {
     var qty by remember { mutableIntStateOf(1) }
 
     val defaultImage =
@@ -59,10 +69,16 @@ fun OrderScreen(viewModel: DetailProductViewModel = hiltViewModel(), productId: 
                 title = {
                     Text("")
                 },
-                modifier = Modifier.statusBarsPadding(),
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(horizontal = 8.dp),
                 navigationIcon = {
                     IconButton(
-                        onClick = onNavigateBack
+                        onClick = onNavigateBack,
+                        modifier = Modifier.background(
+                            color = Color.White,
+                            shape = CircleShape
+                        )
                     ) {
                         Icon(
                             imageVector = Lucide.ArrowLeft,
@@ -80,13 +96,17 @@ fun OrderScreen(viewModel: DetailProductViewModel = hiltViewModel(), productId: 
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(30.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                        horizontalArrangement = Arrangement.spacedBy(30.dp)
                     ) {
                         IconButton(
+                            modifier = Modifier
+                                .border(1.dp, color = BorderGray, shape = CircleShape)
+                                .size(36.dp),
                             onClick = { if (qty > 0) qty-- }
                         ) {
                             Icon(
@@ -99,6 +119,9 @@ fun OrderScreen(viewModel: DetailProductViewModel = hiltViewModel(), productId: 
                             fontSize = 32.sp
                         )
                         IconButton(
+                            modifier = Modifier
+                                .border(1.dp, color = BorderGray, shape = CircleShape)
+                                .size(36.dp),
                             onClick = { qty++ }
                         ) {
                             Icon(
@@ -108,8 +131,14 @@ fun OrderScreen(viewModel: DetailProductViewModel = hiltViewModel(), productId: 
                         }
                     }
                     Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { println("test") }
+                        onClick = { println("test") },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(22),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PrimaryColor
+                        )
+
                     ) {
                         Icon(
                             imageVector = Lucide.Plus,

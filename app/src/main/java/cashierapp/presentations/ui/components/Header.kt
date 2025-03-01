@@ -29,13 +29,12 @@ import cashierapp.presentations.ui.theme.BorderGray
 
 
 @Composable
-fun Header(name: String, modifier: Modifier = Modifier) {
+fun Header(name: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        val context = LocalContext.current
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -65,20 +64,15 @@ fun Header(name: String, modifier: Modifier = Modifier) {
             modifier = Modifier
                 .border(1.dp, color = BorderGray, shape = CircleShape)
                 .size(36.dp),
-            onClick = { onClick(context) }
+            onClick = onClick
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Add Menu")
         }
     }
 }
 
-fun onClick(context: Context) {
-    Toast.makeText(context, "Test Click", Toast.LENGTH_SHORT).show()
-}
-
-
 @Preview(showBackground = true)
 @Composable
 fun HeaderPreview() {
-    Header("Muhammad Askar")
+    Header("Muhammad Askar", onClick = { println("test") })
 }

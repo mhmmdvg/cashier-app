@@ -23,12 +23,15 @@ import cashierapp.presentations.ui.components.CardItem
 import cashierapp.presentations.ui.components.Header
 import cashierapp.presentations.ui.components.Search
 import cashierapp.presentations.ui.screens.Screen
+import cashierapp.presentations.ui.screens.home.components.AddProductForm
 import cashierapp.utils.ScreenSize
 import cashierapp.utils.rememberScreenSize
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: NavController) {
     var searchVal by remember { mutableStateOf(TextFieldValue("")) }
+    var addProductShow by remember { mutableStateOf<Boolean>(false) }
 
     val products by viewModel.products.collectAsState()
     val screenSize = rememberScreenSize()
@@ -53,13 +56,13 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
         ScreenSize.EXPANDED -> 32.dp
     }
 
-   val filteredProduct =  if (searchVal.text.isEmpty()) {
-       products.data
-   } else {
-       products.data?.filter {
-           it.name.contains(searchVal.text, ignoreCase = true)
-       }
-   }
+    val filteredProduct = if (searchVal.text.isEmpty()) {
+        products.data
+    } else {
+        products.data?.filter {
+            it.name.contains(searchVal.text, ignoreCase = true)
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -74,7 +77,8 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
             ) {
                 item(span = { GridItemSpan(gridColumns) }) {
                     Header(
-                        name = "Muhammad Askar"
+                        name = "Muhammad Askar",
+                        onClick = { addProductShow = true }
                     )
                 }
                 item(span = { GridItemSpan(gridColumns) }) {
@@ -128,13 +132,29 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
                         filteredProduct?.let {
                             items(it.size) { index ->
                                 val product = it[index]
-                                CardItem(title = product.name, "Rp.${product.price}", product.image ?: defaultImage) {
+                                CardItem(
+                                    title = product.name,
+                                    "Rp.${product.price}",
+                                    product.image ?: defaultImage
+                                ) {
                                     navController.navigate(route = Screen.Order.route + "/${product.id}")
                                 }
                             }
                         }
                     }
                 }
+
+
+            }
+
+            if (addProductShow) {
+                ModalBottomSheet(
+                    onDismissRequest = { addProductShow = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    AddProductForm()
+                }
+
             }
         }
     }

@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,7 +66,35 @@ class MainActivity : ComponentActivity() {
 fun NavGraph(startDestination: String) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = startDestination) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        enterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(400)
+            ) + fadeIn(animationSpec = tween(400))
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(400)
+            ) + fadeOut(animationSpec = tween(400))
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(400)
+            ) +  fadeIn(animationSpec = tween(400))
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(400)
+            ) + fadeOut(animationSpec = tween(400))
+        }
+        ) {
+
         composable(route = Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
@@ -86,11 +118,3 @@ fun NavGraph(startDestination: String) {
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CashierAppTheme {
-        Header("Muhammad Askar")
-    }
-}
