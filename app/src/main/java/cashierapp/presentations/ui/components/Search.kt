@@ -1,4 +1,5 @@
-package com.example.cashierapp.ui.view
+package cashierapp.presentations.ui.components
+
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,10 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.cashierapp.ui.theme.BorderGray
+import cashierapp.presentations.ui.theme.BorderGray
 
 @Composable
-fun SearchView(){
+fun Search() {
     var text by remember { mutableStateOf(TextFieldValue("")) }
 
     OutlinedTextField(
@@ -45,7 +46,7 @@ fun SearchView(){
 
 @Preview(showBackground = true)
 @Composable
-fun SearchPreview(){
-    SearchView()
+fun SearchPreview() {
+    Search()
 }
 
