@@ -46,8 +46,6 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     val token = tokenManager.getToken()
 
-                    println("is token $token")
-
                     startDestination = if (!token.isNullOrEmpty()) {
                         Screen.Home.route
                     } else {

@@ -35,7 +35,6 @@ class TokenManager @Inject constructor(
 
     private fun isTokenExpired(token: String): Boolean {
         try {
-
             val parts = token.split(".")
             if (parts.size != 3) {
                 return true
@@ -43,28 +42,21 @@ class TokenManager @Inject constructor(
 
             val payload = parts[1]
 
-
             val decodedBytes = Base64.decode(payload, Base64.URL_SAFE)
             val decodedString = String(decodedBytes, StandardCharsets.UTF_8)
 
-
             val jsonObject = JSONObject(decodedString)
 
-
-            // Get expiration time ("exp" claim)
             val expirationTime = jsonObject.optLong("exp", 0)
 
-            // If there's no exp claim or it's 0, assume token doesn't expire
             if (expirationTime == 0L) {
                 return false
             }
 
-            // Compare with current time (exp is in seconds, currentTimeMillis is in milliseconds)
             val currentTime = System.currentTimeMillis() / 1000
 
             return expirationTime < currentTime
         } catch (e: Exception) {
-            // If there's any error in parsing, consider the token invalid
             return true
         }
     }

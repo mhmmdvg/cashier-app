@@ -4,6 +4,7 @@ import cashierapp.data.remote.api.ProductApi
 import android.content.Context
 import android.content.SharedPreferences
 import cashierapp.data.remote.api.AuthApi
+import cashierapp.data.remote.api.ProductAddItemApi
 import cashierapp.data.remote.api.ProductDetailApi
 import cashierapp.data.remote.local.TokenManager
 import cashierapp.utils.AuthInterceptor
@@ -13,6 +14,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -35,9 +37,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
             .build()
     }
 
@@ -67,5 +74,11 @@ object NetworkModule {
     @Singleton
     fun provideDetailProduct(retrofit: Retrofit): ProductDetailApi {
         return retrofit.create(ProductDetailApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddProduct(retrofit: Retrofit): ProductAddItemApi {
+        return retrofit.create(ProductAddItemApi::class.java)
     }
 }

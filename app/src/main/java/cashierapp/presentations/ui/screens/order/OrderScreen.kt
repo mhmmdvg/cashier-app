@@ -213,10 +213,6 @@ fun OrderScreen(
                             text = productState.data?.description ?: "Description",
                             fontSize = 24.sp
                         )
-                        HorizontalDivider(
-                            color = Color.Black
-                        )
-
                     }
                 }
 

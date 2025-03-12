@@ -10,32 +10,46 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import cashierapp.data.remote.local.TokenManager
 import cashierapp.data.resources.Resource
 import cashierapp.presentations.ui.components.CardItem
 import cashierapp.presentations.ui.components.Header
 import cashierapp.presentations.ui.components.Search
-import cashierapp.presentations.ui.screens.Screen
+import cashierapp.presentations.ui.components.SortChips
 import cashierapp.presentations.ui.screens.home.components.AddProductForm
+import cashierapp.presentations.ui.screens.home.components.OrderSheet
+import cashierapp.presentations.viewmodel.home.ProductViewModel
 import cashierapp.utils.ScreenSize
 import cashierapp.utils.rememberScreenSize
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: NavController) {
+    var addProductShow by remember { mutableStateOf(false) }
+    var orderSheetShow by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+
     var searchVal by remember { mutableStateOf(TextFieldValue("")) }
-    var addProductShow by remember { mutableStateOf<Boolean>(false) }
+    var sortedValBy by remember { mutableStateOf("") }
+    var productId by remember { mutableStateOf("") }
 
     val products by viewModel.products.collectAsState()
+
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
     val screenSize = rememberScreenSize()
-    val defaultImage: String =
+    val defaultImage =
         "https://res.cloudinary.com/dxucl7cw6/image/upload/v1740777960/products/m0tthyioslkz5gu8kyes.jpg"
 
     val gridColumns = when (screenSize) {
@@ -56,17 +70,31 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
         ScreenSize.EXPANDED -> 32.dp
     }
 
-    val filteredProduct = if (searchVal.text.isEmpty()) {
-        products.data
-    } else {
-        products.data?.filter {
-            it.name.contains(searchVal.text, ignoreCase = true)
+    val sheetSize = when (screenSize) {
+        ScreenSize.COMPACT -> screenHeight * 0.6f
+        ScreenSize.MEDIUM -> screenHeight * 0.5f
+        ScreenSize.EXPANDED -> screenHeight * 0.8f
+    }
+
+    val filteredProduct = products.data?.let { productList ->
+        when {
+            searchVal.text.isEmpty() && sortedValBy.isEmpty() -> productList
+            sortedValBy.isNotEmpty() -> productList.filter {
+                it.name.contains(sortedValBy, ignoreCase = true)
+            }
+
+            else -> productList.filter {
+                it.name.contains(searchVal.text, ignoreCase = true)
+            }
         }
     }
+
 
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
+            .padding(top = 20.dp),
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyVerticalGrid(
@@ -82,10 +110,22 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
                     )
                 }
                 item(span = { GridItemSpan(gridColumns) }) {
-                    Search(
-                        value = searchVal,
-                        onChange = { searchVal = it }
-                    )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Search(
+                            value = searchVal,
+                            onChange = { searchVal = it }
+                        )
+                        products.data?.let {
+                            SortChips(
+                                product = it,
+                                onClick = { sorted ->
+                                    sortedValBy = if (sorted == sortedValBy) "" else sorted
+                                }
+                            )
+                        }
+                    }
                 }
 
                 when (products) {
@@ -134,10 +174,13 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
                                 val product = it[index]
                                 CardItem(
                                     title = product.name,
-                                    "Rp.${product.price}",
+                                    size = product.size,
+                                    price = "Rp.${product.price}",
                                     product.image ?: defaultImage
                                 ) {
-                                    navController.navigate(route = Screen.Order.route + "/${product.id}")
+//                                    navController.navigate(route = Screen.Order.route + "/${product.id}")
+                                    productId = product.id
+                                    orderSheetShow = true
                                 }
                             }
                         }
@@ -147,14 +190,40 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
 
             }
 
+//          Add Product Sheet
             if (addProductShow) {
                 ModalBottomSheet(
                     onDismissRequest = { addProductShow = false },
-                    modifier = Modifier.fillMaxWidth()
+                    sheetState = sheetState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(sheetSize),
+                    containerColor = Color.White
                 ) {
-                    AddProductForm()
+                    AddProductForm(onSuccessfulAdd = {
+                        scope.launch {
+                            sheetState.hide()
+                            addProductShow = false
+                        }
+                    })
                 }
+            }
 
+//          Order Sheet
+            if (orderSheetShow) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        orderSheetShow = false
+                        productId = ""
+                    },
+                    sheetState = sheetState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(sheetSize),
+                    containerColor = Color.White
+                ) {
+                    OrderSheet(productId = productId)
+                }
             }
         }
     }

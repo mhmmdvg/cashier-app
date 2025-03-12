@@ -1,14 +1,17 @@
-package cashierapp.presentations.ui.screens.home
+package cashierapp.presentations.viewmodel.home
 
 import cashierapp.data.remote.repository.ProductRepository
 import ProductResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cashierapp.data.resources.Resource
+import cashierapp.presentations.ui.screens.home.ProductEvent
+import cashierapp.presentations.ui.screens.home.ProductEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,11 +19,22 @@ import javax.inject.Inject
 class ProductViewModel @Inject constructor(
     private val productRepository: ProductRepository
 ) : ViewModel() {
-    private val _products = MutableStateFlow<Resource<List<ProductResponse>>>(Resource.Success(null))
+    private val _products =
+        MutableStateFlow<Resource<List<ProductResponse>>>(Resource.Success(null))
     val products: StateFlow<Resource<List<ProductResponse>>> = _products.asStateFlow()
 
     init {
         fetchProducts()
+
+        viewModelScope.launch {
+            ProductEventBus.events.collect { event ->
+                when (event) {
+                    is ProductEvent.ProductAdded,
+                    is ProductEvent.ProductUpdated,
+                    is ProductEvent.ProductDeleted -> fetchProducts()
+                }
+            }
+        }
     }
 
     fun fetchProducts() {

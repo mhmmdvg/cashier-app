@@ -1,4 +1,4 @@
-package cashierapp.presentations.ui.screens.auth
+package cashierapp.presentations.viewmodel.auth
 
 
 import androidx.lifecycle.ViewModel
@@ -26,7 +26,6 @@ class LoginViewModel @Inject constructor(
 
             try {
                 val result = authRepository.login(email, password)
-                println(result)
 
                 result.fold(
                     onSuccess = { response ->
@@ -37,7 +36,6 @@ class LoginViewModel @Inject constructor(
                     }
                 )
             } catch (e: Exception) {
-                println(e)
                 _loginState.value = Resource.Error(e.message ?: "Unknown error")
             }
         }
