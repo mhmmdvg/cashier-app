@@ -31,6 +31,7 @@ import cashierapp.data.resources.Resource
 import cashierapp.presentations.ui.components.AsyncImage
 import cashierapp.presentations.ui.theme.BorderGray
 import cashierapp.presentations.ui.theme.PrimaryColor
+import cashierapp.presentations.viewmodel.home.ProductViewModel
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
@@ -39,7 +40,7 @@ import com.composables.icons.lucide.Plus
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(
-    viewModel: DetailProductViewModel = hiltViewModel(),
+    viewModel: ProductViewModel = hiltViewModel(),
     productId: String?,
     onNavigateBack: () -> Unit
 ) {

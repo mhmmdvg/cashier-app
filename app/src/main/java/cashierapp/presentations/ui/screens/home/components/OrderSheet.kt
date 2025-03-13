@@ -36,18 +36,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import cashierapp.data.resources.Resource
 import cashierapp.presentations.ui.components.AsyncImage
-import cashierapp.presentations.ui.screens.order.DetailProductViewModel
 import cashierapp.presentations.ui.theme.BorderGray
 import cashierapp.presentations.ui.theme.PrimaryColor
-import cashierapp.utils.ScreenSize
-import cashierapp.utils.rememberScreenSize
+import cashierapp.presentations.viewmodel.home.ProductViewModel
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Plus
 
 @Composable
 fun OrderSheet(
-    viewModel: DetailProductViewModel = hiltViewModel(),
+    viewModel: ProductViewModel = hiltViewModel(),
     productId: String?
 ) {
     var qty by remember { mutableIntStateOf(1) }

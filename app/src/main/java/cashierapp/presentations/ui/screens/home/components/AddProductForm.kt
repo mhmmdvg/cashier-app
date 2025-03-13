@@ -37,16 +37,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import cashierapp.data.resources.Resource
-import cashierapp.presentations.viewmodel.home.AddProductViewModel
 import cashierapp.presentations.ui.theme.BorderGray
 import cashierapp.presentations.ui.theme.PrimaryColor
+import cashierapp.presentations.viewmodel.home.ProductViewModel
 import cashierapp.utils.JwtUtils
 import cashierapp.utils.RupiahVisualTransformation
 import kotlinx.coroutines.delay
 
 @Composable
 fun AddProductForm(
-    viewModel: AddProductViewModel = hiltViewModel(),
+    viewModel: ProductViewModel = hiltViewModel(),
     onSuccessfulAdd: () -> Unit = {}
 ) {
 

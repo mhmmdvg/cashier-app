@@ -1,6 +1,8 @@
 package cashierapp.presentations.ui.components
 
 import ProductResponse
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,6 +45,24 @@ fun SortChips(product: List<ProductResponse>, onClick: (name: String) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         uniqueProductName.forEachIndexed { index, it ->
+            val backgroundColor by animateColorAsState(
+                targetValue = if (selected == index) PrimaryColor else Color.White,
+                animationSpec = tween(durationMillis = 250),
+                label = "backgroundColorAnimation"
+            )
+
+            val textColor by animateColorAsState(
+                targetValue = if (selected == index) Color.White else Color.Black,
+                animationSpec = tween(durationMillis = 250),
+                label = "textColorAnimation"
+            )
+
+            val borderColor by animateColorAsState(
+                targetValue = if (selected == index) Color.Transparent else BorderGray,
+                animationSpec = tween(durationMillis = 250),
+                label = "borderColorAnimation"
+            )
+
             Box(
                 modifier = Modifier
                     .wrapContentWidth()
@@ -50,11 +70,11 @@ fun SortChips(product: List<ProductResponse>, onClick: (name: String) -> Unit) {
                     .padding(horizontal = 4.dp, vertical = 6.dp)
                     .border(
                         width = 1.dp,
-                        color = if (selected == index) Color.Transparent else BorderGray,
+                        color = borderColor,
                         shape = CircleShape
                     )
                     .background(
-                        color = if (selected == index) PrimaryColor else Color.White,
+                        color = backgroundColor,
                         shape = CircleShape
                     )
                     .clip(shape = CircleShape)
@@ -71,7 +91,7 @@ fun SortChips(product: List<ProductResponse>, onClick: (name: String) -> Unit) {
                 Text(
                     text = it.name ?: "Undefined",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (selected == index) Color.White else Color.Black,
+                    color = textColor,
                     maxLines = 1,
                     softWrap = true,
                     overflow = TextOverflow.Ellipsis

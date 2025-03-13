@@ -12,14 +12,10 @@ import retrofit2.http.Path
 interface ProductApi {
     @GET("products/")
     suspend fun products(): Response<List<ProductResponse>>
-}
 
-interface ProductDetailApi {
     @GET("products/{id}")
     suspend fun detailProducts(@Path("id") productId: String): Response<ProductResponse>
-}
 
-interface ProductAddItemApi {
     @POST("products/")
     suspend fun addProduct(@Body request: ProductRequest): Response<ProductRequestRes>
 }

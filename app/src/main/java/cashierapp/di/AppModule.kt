@@ -4,8 +4,6 @@ import cashierapp.data.remote.api.ProductApi
 import android.content.Context
 import android.content.SharedPreferences
 import cashierapp.data.remote.api.AuthApi
-import cashierapp.data.remote.api.ProductAddItemApi
-import cashierapp.data.remote.api.ProductDetailApi
 import cashierapp.data.remote.local.TokenManager
 import cashierapp.utils.AuthInterceptor
 import dagger.Module
@@ -68,17 +66,5 @@ object NetworkModule {
     @Singleton
     fun provideProductApi(retrofit: Retrofit): ProductApi {
         return retrofit.create(ProductApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideDetailProduct(retrofit: Retrofit): ProductDetailApi {
-        return retrofit.create(ProductDetailApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideAddProduct(retrofit: Retrofit): ProductAddItemApi {
-        return retrofit.create(ProductAddItemApi::class.java)
     }
 }
