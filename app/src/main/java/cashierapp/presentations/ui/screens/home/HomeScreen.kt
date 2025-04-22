@@ -1,10 +1,24 @@
 package cashierapp.presentations.ui.screens.home
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,8 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import cashierapp.data.resources.Resource
 import cashierapp.presentations.ui.components.CardItem
 import cashierapp.presentations.ui.components.Header
@@ -30,11 +42,12 @@ import cashierapp.presentations.ui.screens.home.components.OrderSheet
 import cashierapp.presentations.viewmodel.home.ProductViewModel
 import cashierapp.utils.ScreenSize
 import cashierapp.utils.rememberScreenSize
+import cashierapp.utils.toRupiahFormat
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: NavController) {
+fun HomeScreen(viewModel: ProductViewModel) {
     var addProductShow by remember { mutableStateOf(false) }
     var orderSheetShow by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -92,8 +105,7 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
 
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 20.dp),
+            .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
@@ -175,7 +187,7 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
                                 CardItem(
                                     title = product.name,
                                     size = product.size,
-                                    price = "Rp.${product.price}",
+                                    price = product.price.toRupiahFormat(),
                                     product.image ?: defaultImage
                                 ) {
 //                                    navController.navigate(route = Screen.Order.route + "/${product.id}")
@@ -222,7 +234,16 @@ fun HomeScreen(viewModel: ProductViewModel = hiltViewModel(), navController: Nav
                         .height(sheetSize),
                     containerColor = Color.White
                 ) {
-                    OrderSheet(productId = productId)
+                    OrderSheet(
+                        viewModel = viewModel,
+                        productId = productId,
+                        onSuccessfulAdd = {
+                            scope.launch {
+                                sheetState.hide()
+                                orderSheetShow = false
+                            }
+                        }
+                    )
                 }
             }
         }

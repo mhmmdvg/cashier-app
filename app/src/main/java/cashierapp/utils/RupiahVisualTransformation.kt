@@ -4,6 +4,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import java.text.NumberFormat
+import java.util.Locale
 
 class RupiahVisualTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
@@ -66,4 +68,11 @@ class RupiahVisualTransformation : VisualTransformation {
 // Extension function to format numbers with thousand separators
 fun Long.toDecimalFormat(): String {
     return String.format("%,d", this).replace(",", ".")
+}
+
+fun Int.toRupiahFormat(): String {
+    val localeID = Locale("in", "ID")
+    val numberFormat = NumberFormat.getCurrencyInstance(localeID)
+    numberFormat.maximumFractionDigits = 0
+    return numberFormat.format(this)
 }

@@ -44,6 +44,7 @@ android {
 
 dependencies {
 
+    implementation(libs.lottie.compose)
     implementation(libs.icons.lucide)
     implementation(libs.retrofit)
     implementation(libs.retrofit2.converter.gson)

@@ -1,5 +1,7 @@
 package cashierapp.presentations.viewmodel.home
 
+import CartItem
+import CartProduct
 import ProductRequestRes
 import cashierapp.data.remote.repository.ProductRepository
 import ProductResponse
@@ -31,7 +33,13 @@ class ProductViewModel @Inject constructor(
     val addProductState: StateFlow<Resource<ProductRequestRes>> = _addProductState.asStateFlow()
 
     private val _detailProduct = MutableStateFlow<Resource<ProductResponse>>(Resource.Success(null))
-    val detailProduct: StateFlow<Resource<ProductResponse>> = _detailProduct
+    val detailProduct: StateFlow<Resource<ProductResponse>> = _detailProduct.asStateFlow()
+
+    private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
+    val cartItems: StateFlow<List<CartItem>> = _cartItems.asStateFlow()
+
+    private val _totalPrice = MutableStateFlow(0)
+    val totalPrice: StateFlow<Int> = _totalPrice.asStateFlow()
 
     fun getToken(): String? {
         return tokenManager.getToken()
@@ -128,5 +136,89 @@ class ProductViewModel @Inject constructor(
                 _addProductState.value = Resource.Error(e.message ?: "Unknown Error")
             }
         }
+    }
+
+
+    fun addToCart(quantity: Int, product: CartProduct) {
+        val currentItems = _cartItems.value.toMutableList()
+
+        val existingItemIndex = currentItems.indexOfFirst { it.product.id == product.id }
+
+        if (existingItemIndex >= 0) {
+            val existingItem = currentItems[existingItemIndex]
+            val updatedProduct =
+                existingItem.product.copy(qty = existingItem.product.qty + quantity)
+            currentItems[existingItemIndex] =
+                existingItem.copy(
+                    product = updatedProduct,
+                    quantity = existingItem.quantity + quantity
+                )
+        } else {
+            val updatedProduct = product.copy(qty = quantity)
+            currentItems.add(CartItem(quantity, updatedProduct))
+        }
+
+        _cartItems.value = currentItems
+        calculateTotal()
+    }
+
+    fun clearProductCart() {
+        _cartItems.value = emptyList()
+    }
+
+    fun increaseProductQty(productId: String) {
+        val currentItems = _cartItems.value.toMutableList()
+        val itemIndex = currentItems.indexOfFirst { it.product.id == productId }
+
+        if (itemIndex >= 0) {
+            val item = currentItems[itemIndex]
+
+            val updatedProduct = item.product.copy(qty = item.product.qty + 1)
+
+            currentItems[itemIndex] = item.copy(
+                product = updatedProduct,
+                quantity = item.quantity + 1
+            )
+            _cartItems.value = currentItems
+            calculateTotal()
+        }
+    }
+
+    fun decreaseProductQty(productId: String) {
+        val currentItems = _cartItems.value.toMutableList()
+        val itemIndex = currentItems.indexOfFirst { it.product.id == productId }
+
+        if (itemIndex < 0) return
+
+        val item = currentItems[itemIndex]
+
+        if (item.product.qty > 1) {
+            val updatedProduct = item.product.copy(qty = item.product.qty - 1)
+
+            currentItems[itemIndex] = item.copy(
+                product = updatedProduct,
+                quantity = item.quantity - 1
+            )
+
+            _cartItems.value = currentItems
+            calculateTotal()
+            return
+        }
+
+        if (item.quantity > 1) {
+            currentItems[itemIndex] = item.copy(quantity = item.quantity - 1)
+            _cartItems.value = currentItems
+            calculateTotal()
+            return
+        }
+
+        currentItems.removeAt(itemIndex)
+        _cartItems.value = currentItems
+        calculateTotal()
+    }
+
+    private fun calculateTotal() {
+        val total = _cartItems.value.sumOf { it.product.price * it.quantity }
+        _totalPrice.value = total
     }
 }

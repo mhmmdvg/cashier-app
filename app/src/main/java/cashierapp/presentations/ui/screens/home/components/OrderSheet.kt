@@ -1,5 +1,7 @@
 package cashierapp.presentations.ui.screens.home.components
 
+import CartProduct
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,17 +42,17 @@ import cashierapp.presentations.ui.components.AsyncImage
 import cashierapp.presentations.ui.theme.BorderGray
 import cashierapp.presentations.ui.theme.PrimaryColor
 import cashierapp.presentations.viewmodel.home.ProductViewModel
+import cashierapp.utils.toRupiahFormat
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Plus
 
 @Composable
 fun OrderSheet(
-    viewModel: ProductViewModel = hiltViewModel(),
-    productId: String?
+    viewModel: ProductViewModel,
+    productId: String?,
+    onSuccessfulAdd: () -> Unit
 ) {
-    var qty by remember { mutableIntStateOf(1) }
-
     val defaultImage =
         "https://res.cloudinary.com/dxucl7cw6/image/upload/v1740777960/products/m0tthyioslkz5gu8kyes.jpg"
 
@@ -60,6 +63,12 @@ fun OrderSheet(
     }
 
     val productState by viewModel.detailProduct.collectAsState()
+    val cartItems by viewModel.cartItems.collectAsState()
+
+    val cartItem = cartItems.find { it.product.id == productId }
+
+    var itemQty by remember { mutableIntStateOf(cartItem?.product?.qty ?: 1) }
+
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -105,10 +114,10 @@ fun OrderSheet(
                             Text(
                                 text = (productState.data?.name + " - " + productState.data?.size),
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 22.sp
+                                fontSize = 22.sp,
                             )
                             Text(
-                                text = ("Rp." + productState.data?.price.toString()) ?: "0",
+                                text = productState.data?.price?.toRupiahFormat().toString(),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 22.sp
                             )
@@ -136,7 +145,9 @@ fun OrderSheet(
                                     modifier = Modifier
                                         .border(1.dp, color = BorderGray, shape = CircleShape)
                                         .size(36.dp),
-                                    onClick = { if (qty > 0) qty-- }
+                                    onClick = {
+                                        if (itemQty != 0) itemQty--
+                                    }
                                 ) {
                                     Icon(
                                         imageVector = Lucide.Minus,
@@ -144,14 +155,15 @@ fun OrderSheet(
                                     )
                                 }
                                 Text(
-                                    text = qty.toString(),
-                                    fontSize = 24.sp
+                                    text = itemQty.toString(),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium
                                 )
                                 IconButton(
                                     modifier = Modifier
                                         .border(1.dp, color = BorderGray, shape = CircleShape)
                                         .size(36.dp),
-                                    onClick = { qty++ }
+                                    onClick = { itemQty++ }
                                 ) {
                                     Icon(
                                         imageVector = Lucide.Plus,
@@ -160,7 +172,24 @@ fun OrderSheet(
                                 }
                             }
                             Button(
-                                onClick = { println("test") },
+                                onClick = {
+                                    val product = productState.data?.let {
+                                        CartProduct(
+                                            id = it.id,
+                                            name = it.name,
+                                            price = it.price,
+                                            description = it.description,
+                                            size = it.size,
+                                            type = it.type,
+                                            image = it.image,
+                                            qty = itemQty
+                                        )
+                                    }
+                                    if (product != null && itemQty > 0) {
+                                        viewModel.addToCart(itemQty, product)
+                                        onSuccessfulAdd()
+                                    }
+                                },
                                 modifier = Modifier
                                     .weight(1f),
                                 contentPadding = PaddingValues(vertical = 14.dp),
@@ -176,7 +205,9 @@ fun OrderSheet(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Keranjang ${productState.data?.price}",
+                                    text = "Keranjang ${
+                                        productState.data?.price?.times(itemQty)?.toRupiahFormat()
+                                    }",
                                     fontSize = 18.sp
                                 )
                             }

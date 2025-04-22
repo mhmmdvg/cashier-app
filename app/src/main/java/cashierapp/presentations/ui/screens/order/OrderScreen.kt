@@ -1,37 +1,31 @@
 package cashierapp.presentations.ui.screens.order
 
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import cashierapp.data.resources.Resource
+import androidx.navigation.NavController
 import cashierapp.presentations.ui.components.AsyncImage
+import cashierapp.presentations.ui.screens.Screen
+import cashierapp.presentations.ui.screens.order.components.OrderBottomBar
 import cashierapp.presentations.ui.theme.BorderGray
-import cashierapp.presentations.ui.theme.PrimaryColor
 import cashierapp.presentations.viewmodel.home.ProductViewModel
+import cashierapp.utils.toRupiahFormat
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
@@ -40,39 +34,24 @@ import com.composables.icons.lucide.Plus
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(
-    viewModel: ProductViewModel = hiltViewModel(),
-    productId: String?,
+    viewModel: ProductViewModel,
+    navController: NavController,
     onNavigateBack: () -> Unit
 ) {
-    var qty by remember { mutableIntStateOf(1) }
+    val cartItem by viewModel.cartItems.collectAsState()
+    val totalPrice by viewModel.totalPrice.collectAsState()
+
+    val scrollState = rememberScrollState()
 
     val defaultImage =
         "https://res.cloudinary.com/dxucl7cw6/image/upload/v1740777960/products/m0tthyioslkz5gu8kyes.jpg"
 
-
-    LaunchedEffect(productId) {
-        if (productId != null) {
-            viewModel.fetchDetailProduct(productId)
-        }
-    }
-
-    val productState by viewModel.detailProduct.collectAsState()
-
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0f),
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
                 title = {
-                    Text("")
+                    Text("Confirmation Order")
                 },
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(horizontal = 8.dp),
                 navigationIcon = {
                     IconButton(
                         onClick = onNavigateBack,
@@ -90,157 +69,117 @@ fun OrderScreen(
             )
         },
         bottomBar = {
-            BottomAppBar(
-                containerColor = Color.White
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(30.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(30.dp)
-                    ) {
-                        IconButton(
-                            modifier = Modifier
-                                .border(1.dp, color = BorderGray, shape = CircleShape)
-                                .size(36.dp),
-                            onClick = { if (qty > 0) qty-- }
-                        ) {
-                            Icon(
-                                imageVector = Lucide.Minus,
-                                contentDescription = "Decrease Quantity"
-                            )
-                        }
-                        Text(
-                            text = qty.toString(),
-                            fontSize = 32.sp
-                        )
-                        IconButton(
-                            modifier = Modifier
-                                .border(1.dp, color = BorderGray, shape = CircleShape)
-                                .size(36.dp),
-                            onClick = { qty++ }
-                        ) {
-                            Icon(
-                                imageVector = Lucide.Plus,
-                                contentDescription = "Increase Quantity"
-                            )
-                        }
-                    }
-                    Button(
-                        onClick = { println("test") },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(22),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = PrimaryColor
-                        )
-
-                    ) {
-                        Icon(
-                            imageVector = Lucide.Plus,
-                            contentDescription = "Cart Icon"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Keranjang ${productState.data?.price}",
-                            fontSize = 18.sp
-                        )
-                    }
+            OrderBottomBar(
+                priceTotal = totalPrice,
+                onCheckout = {
+                    navController.navigate(Screen.OrderSuccess.route)
                 }
-            }
+            )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(
-                    start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                    end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                    bottom = innerPadding.calculateBottomPadding()
-                ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .verticalScroll(scrollState)
+                .padding(innerPadding)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            Text(
+                text = "Order List",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Medium
+            )
 
-            when (productState) {
-                is Resource.Loading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                is Resource.Success -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(450.dp),
-                    ) {
-                        AsyncImage(
-                            imageUrl = productState.data?.image ?: defaultImage,
-                            description = productState.data?.name,
+            cartItem.forEach { item ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = BorderGray,
+                            shape = RoundedCornerShape(12.dp)
                         )
-                    }
-                    Column(
-                        modifier = Modifier.padding(
-                            horizontal = 24.dp
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = productState.data?.name ?: "Coffee",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 32.sp
-                            )
-                            Text(
-                                text = ("Rp." + productState.data?.price.toString()) ?: "0",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 32.sp
-                            )
-
-                        }
-                        Text(
-                            text = productState.data?.description ?: "Description",
-                            fontSize = 24.sp
-                        )
-                    }
-                }
-
-                is Resource.Error -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentAlignment = Alignment.Center
+                        .padding(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(100.dp),
+                            verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = productState.message ?: "Unknown error occured",
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Button(
-                                onClick = {
-                                    if (productId != null) {
-                                        viewModel.fetchDetailProduct(productId)
+                            Column {
+                                Text(
+                                    text = item.product.name,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = item.product.size,
+                                    fontSize = 18.sp,
+                                    color = Color.Gray
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = item.product.price.toRupiahFormat(),
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(18.dp)
+                                ) {
+                                    IconButton(
+                                        modifier = Modifier
+                                            .border(1.dp, color = BorderGray, shape = CircleShape)
+                                            .size(36.dp),
+                                        onClick = { viewModel.decreaseProductQty(item.product.id) }
+                                    ) {
+                                        Icon(
+                                            imageVector = Lucide.Minus,
+                                            contentDescription = "Decrease Quantity"
+                                        )
+                                    }
+                                    Text(
+                                        text = item.product.qty.toString(),
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    IconButton(
+                                        modifier = Modifier
+                                            .border(1.dp, color = BorderGray, shape = CircleShape)
+                                            .size(36.dp),
+                                        onClick = { viewModel.increaseProductQty(item.product.id) }
+                                    ) {
+                                        Icon(
+                                            imageVector = Lucide.Plus,
+                                            contentDescription = "Increase Quantity"
+                                        )
                                     }
                                 }
-                            ) {
-                                Text("Retry")
                             }
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .height(180.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(color = Color.Gray)
+                        ) {
+                            AsyncImage(
+                                imageUrl = item.product.image ?: defaultImage,
+                                description = item.product.name
+                            )
                         }
                     }
                 }
@@ -249,9 +188,3 @@ fun OrderScreen(
     }
 }
 
-
-@Preview
-@Composable
-fun OrderPreview() {
-    OrderScreen(productId = "1234", onNavigateBack = { println("debug") })
-}

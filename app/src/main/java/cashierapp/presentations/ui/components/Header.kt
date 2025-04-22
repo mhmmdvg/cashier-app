@@ -47,7 +47,7 @@ fun Header(name: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
                     text = name.substring(0, 1),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp,
-                    color = Color.White
+                    color = Color.Gray
                 )
             }
             Spacer(modifier = Modifier.size(12.dp))
@@ -55,7 +55,6 @@ fun Header(name: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
                 text = name,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 18.sp
-
             )
         }
 
